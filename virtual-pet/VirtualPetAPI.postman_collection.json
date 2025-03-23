@@ -1,0 +1,150 @@
+{
+  "info": {
+    "name": "Virtual Pet API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create Pet",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Fluffy\",\n  \"happiness\": 100,\n  \"hunger\": 50,\n  \"energy\": 75\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/pets",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "pets"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Single Pet Stats",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:3000/pets/:id",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "pets",
+            ":id"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get All Pets Stats",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:3000/pets",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "pets"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Update Pet Stats",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"happiness\": 90,\n  \"hunger\": 40,\n  \"energy\": 80\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/pets/:id",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "pets",
+            ":id"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Delete Pet",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "http://localhost:3000/pets/:id",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "pets",
+            ":id"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Prometheus Metrics",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:3000/metrics",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "metrics"
+          ]
+        }
+      }
+    },
+    {
+      "name": "Panic Test",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "http://localhost:3000/panic",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "panic"
+          ]
+        }
+      }
+    }
+  ]
+}

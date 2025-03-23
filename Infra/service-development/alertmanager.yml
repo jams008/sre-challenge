@@ -1,0 +1,22 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  group_by: ['alertname']
+  group_wait: 10s
+  group_interval: 10s
+  repeat_interval: 1h
+  receiver: 'discord'
+
+receivers:
+- name: 'discord'
+  discord_configs:
+  - webhook_url: 'https://discord.com/api/webhooks/1353396949721682011/2wPi_0zPaocqyes0ogsnHduwXdSDIOVl9StoF3x1XN7s0_Omv4qHv4DWdOR9yTNGpvFs'
+    send_resolved: true
+    title: 'VirtualPets Alert'
+    avatar_url: 'https://img.freepik.com/premium-psd/3d-warning-symbol_353336-624.jpg'
+    message: |-
+      {{ range .Alerts }}
+      Pet ID: {{ .Labels.pet_id }}
+      Summary: {{ .Annotations.summary }}
+      {{ end }}
