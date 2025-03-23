@@ -11,7 +11,7 @@ route:
 receivers:
 - name: 'discord'
   discord_configs:
-  - webhook_url: ''
+  - webhook_url: 'https://discord.com/api/webhooks/1353396949721682011/2wPi_0zPaocqyes0ogsnHduwXdSDIOVl9StoF3x1XN7s0_Omv4qHv4DWdOR9yTNGpvFs'
     send_resolved: true
     title: 'VirtualPets Alert'
     avatar_url: 'https://img.freepik.com/premium-psd/3d-warning-symbol_353336-624.jpg'

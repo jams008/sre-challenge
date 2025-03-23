@@ -2,11 +2,13 @@ version: '3.8'
 
 services:
   app:
-    build: ../../code/virtual-pets
+    build: ../../virtual-pet
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
     depends_on:
       - mongodb
+    volumes:
+      - .env:/app/.env
     env_file:
       - .env
     labels:
