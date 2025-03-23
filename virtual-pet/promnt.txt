@@ -1,0 +1,11 @@
+Build a microservice that manages virtual pets with various stats (happiness, hunger, energy) and detail:
+- Create pets
+- Get stats pets
+- Get all stats pets 
+- update data (happiness, hunger, energy) on pets
+- Create metric data for info list (happiness, hunger, energy) promotheus module for monitoring
+- Delete pets
+- ID data pet using UUID 
+- storage data on MongoDB
+- using framework fiber golang and Rest API
+
