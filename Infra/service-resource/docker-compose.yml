@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  app:
+    build: ../../code/virtual-pets
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
+    depends_on:
+      - mongodb
+    env_file:
+      - .env
+    labels:
+      - "prometheus.io/scrape=true"
+      - "prometheus.io/port=${SERVER_PORT}"
+      - "prometheus.io/path=/metrics"
+
+  mongodb:
+    image: mongo:6.0-jammy
+    ports:
+      - "${MONGODB_PORT}:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=${MONGODB_DATABASE}
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./rules/alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    depends_on:
+      - app
+      - alertmanager
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+
+volumes:
+  mongodb_data:
+  prometheus_data:

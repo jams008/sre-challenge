@@ -1,0 +1,29 @@
+groups:
+- name: VirtualPets
+  rules:
+  - alert: LowPetEnergy
+    expr: virtual_pets_pet_energy < 10
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Pet Energy is low"
+      description: "Pet energy level is below 10"
+
+  - alert: LowPetHappiness
+    expr: virtual_pets_pet_happiness < 10
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Pet Happiness is low"
+      description: "Pet happiness level is below 10"
+
+  - alert: LowPetHunger
+    expr: virtual_pets_pet_hunger < 10
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Pet Hunger is low"
+      description: "Pet hunger level is below 10"
