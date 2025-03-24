@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"os"
+	"time"
 	"virtual-pet/models"
 
 	"github.com/gofiber/fiber/v2"
@@ -63,8 +64,44 @@ func main() {
 		panic("MONGODB_COLLECTION not set in .env file")
 	}
 
-	// MongoDB connection
-	client, _ := mongo.Connect(context.Background(), options.Client().ApplyURI(mongoURI))
+	// MongoDB connection with auth options
+	credential := options.Credential{
+		AuthMechanism: "SCRAM-SHA-1",
+		AuthSource:    mongoDatabase, // or "admin" depending on your MongoDB setup
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	clientOptions := options.Client().
+		ApplyURI(mongoURI).
+		SetAuth(credential).
+		SetServerAPIOptions(options.ServerAPI(options.ServerAPIVersion1)).
+		SetDirect(true)
+
+	// Try to connect with retries
+	var client *mongo.Client
+	for i := 0; i < 3; i++ {
+		client, err = mongo.Connect(ctx, clientOptions)
+		if err == nil {
+			// Test the connection
+			err = client.Ping(ctx, nil)
+			if err == nil {
+				break
+			}
+		}
+		time.Sleep(2 * time.Second)
+	}
+	if err != nil {
+		panic("Failed to connect to MongoDB after retries: " + err.Error())
+	}
+
+	defer func() {
+		if err := client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+
 	collection := client.Database(mongoDatabase).Collection(mongoCollection)
 
 	// Initialize metrics for all pets
