@@ -64,8 +64,8 @@ func main() {
 	}
 
 	// Construct MongoDB URI with credentials
-	mongoURI := fmt.Sprintf("mongodb://%s:%s@%s:%s/?authSource=admin",
-		mongoUsername, mongoPassword, mongoHost, mongoPort)
+	mongoURI := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s",
+		mongoUsername, mongoPassword, mongoHost, mongoPort, mongoDatabase)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
