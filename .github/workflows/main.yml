@@ -26,4 +26,5 @@ jobs:
         with:
           context: ./virtual-pet
           push: true
+          platforms: linux/amd64,linux/arm64
           tags: jamal008/virtual-pet:${{ github.ref_name }},jamal008/virtual-pet:latest
