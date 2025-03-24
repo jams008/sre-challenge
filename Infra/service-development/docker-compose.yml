@@ -3,6 +3,7 @@ version: '3.8'
 services:
   app:
     build: ../../virtual-pet
+    # image: jamal008/virtual-pet:v0.0.5
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
     depends_on:
@@ -24,6 +25,8 @@ services:
       - mongodb_data:/data/db
     environment:
       - MONGO_INITDB_DATABASE=${MONGODB_DATABASE}
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
 
   prometheus:
     image: prom/prometheus:latest

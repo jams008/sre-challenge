@@ -1,0 +1,125 @@
+---
+apiVersion: mongodbcommunity.mongodb.com/v1
+kind: MongoDBCommunity
+metadata:
+  name: virtual-pet-mongodb
+spec:
+  members: 1
+  type: ReplicaSet
+  version: "6.0.5"
+  prometheus:
+    username: admin
+
+    # Metrics endpoint HTTP Basic Auth password
+    passwordSecretRef:
+      name: metrics-endpoint-password
+
+    # Optional, defaults to `/metrics`
+    # metricsPath: /metrics
+
+    # Optional defaults to 9216
+    # port: 9216
+
+    # Prometheus endpoint can be configured to use HTTPS
+    # tlsSecretKeyRef:
+    #   name: "<kubernetes.io/tls secret name>"
+  security:
+    authentication:
+      modes:
+        - SCRAM-SHA-1  # Add this to explicitly enable SCRAM-SHA-1
+  users:
+    - name: pet
+      db: virtual-pet
+      passwordSecretRef: # a reference to the secret that will be used to generate the user's password
+        name: virtual-pet-password
+      roles:
+        - name: clusterAdmin
+          db: virtual-pet
+        - name: userAdminAnyDatabase
+          db: virtual-pet
+        - name: readWrite
+          db: virtual-pet
+      scramCredentialsSecretName: scram-virtual-pet
+  statefulSet:
+    spec:
+      # volumeClaimTemplates:
+      #   - metadata:
+      #       name: data-virtual-pet-mongodb
+      #     spec:
+      #       resources:
+      #         requests:
+      #           storage: 5Gi
+      selector:
+        matchLabels:
+          app.kubernetes.io/name: mongodb
+      template:
+        metadata:
+          # label the pod which is used by the "labelSelector" in podAntiAffinty
+          # you can label it witch some other labels as well -- make sure it change the podAntiAffinity labelselector accordingly
+          labels:
+           app.kubernetes.io/name: mongodb
+        spec:
+          # resources can be specified by applying an override
+          # per container name.
+          containers:
+            - name: mongod
+              resources:
+                limits:
+                  cpu: "0.2"
+                  memory: 512M
+                requests:
+                  cpu: "0.2"
+                  memory: 200M
+            - name: mongodb-agent
+              resources:
+                limits:
+                  cpu: "0.2"
+                  memory: 250M
+                requests:
+                  cpu: "0.2"
+                  memory: 200M
+          initContainers:
+            - name: mongodb-agent-readinessprobe
+              resources:
+                limits:
+                  cpu: "0.2"
+                  memory: 200M
+                requests:
+                  cpu: "0.1"
+                  memory: 100M
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  podAffinityTerm:
+                    labelSelector:
+                      matchExpressions:
+                        - key: app.kubernetes.io/name
+                          operator: In
+                          values:
+                            - mongodb
+                    topologyKey: kubernetes.io/hostname
+  additionalMongodConfig:
+    storage.wiredTiger.engineConfig.journalCompressor: zlib
+
+# the user credentials will be generated from this secret
+# once the credentials are generated, this secret is no longer required
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: virtual-pet-password
+type: Opaque
+stringData:
+  password: "password123"
+
+---
+# Secret holding the prometheus metrics endpoint HTTP Password.
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: metrics-endpoint-password
+type: Opaque
+stringData:
+  password: "password123"
