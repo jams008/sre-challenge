@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"time"
 	"virtual-pet/models"
 
 	"github.com/gofiber/fiber/v2"
@@ -49,22 +51,55 @@ func main() {
 		panic("Error loading .env file")
 	}
 
-	// Get MongoDB URI, database, and collection from environment variables
-	mongoURI := os.Getenv("MONGODB_URI")
-	if mongoURI == "" {
-		panic("MONGODB_URI not set in .env file")
-	}
+	// Get MongoDB connection details from environment variables
+	mongoUsername := os.Getenv("MONGODB_USERNAME")
+	mongoPassword := os.Getenv("MONGODB_PASSWORD")
+	mongoHost := os.Getenv("MONGODB_HOST")
+	mongoPort := os.Getenv("MONGODB_PORT")
 	mongoDatabase := os.Getenv("MONGODB_DATABASE")
-	if mongoDatabase == "" {
-		panic("MONGODB_DATABASE not set in .env file")
-	}
 	mongoCollection := os.Getenv("MONGODB_COLLECTION")
-	if mongoCollection == "" {
-		panic("MONGODB_COLLECTION not set in .env file")
+
+	if mongoUsername == "" || mongoPassword == "" || mongoHost == "" || mongoDatabase == "" || mongoCollection == "" {
+		panic("MongoDB environment variables not properly set")
 	}
 
-	// MongoDB connection
-	client, _ := mongo.Connect(context.Background(), options.Client().ApplyURI(mongoURI))
+	// Construct MongoDB URI with credentials
+	mongoURI := fmt.Sprintf("mongodb://%s:%s@%s:%s/%s",
+		mongoUsername, mongoPassword, mongoHost, mongoPort, mongoDatabase)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// Simplified connection options
+	clientOptions := options.Client().ApplyURI(mongoURI)
+
+	// Try to connect with retries and better error logging
+	var client *mongo.Client
+	var lastErr error
+	for i := 0; i < 3; i++ {
+		client, lastErr = mongo.Connect(ctx, clientOptions)
+		if lastErr == nil {
+			// Test the connection
+			if err := client.Ping(ctx, nil); err == nil {
+				fmt.Printf("Successfully connected to MongoDB at %s:%s\n", mongoHost, mongoPort)
+				break
+			} else {
+				lastErr = fmt.Errorf("ping failed: %v", err)
+			}
+		}
+		fmt.Printf("Attempt %d failed: %v\n", i+1, lastErr)
+		time.Sleep(2 * time.Second)
+	}
+	if lastErr != nil {
+		panic(fmt.Sprintf("Failed to connect to MongoDB after retries: %v", lastErr))
+	}
+
+	defer func() {
+		if err := client.Disconnect(ctx); err != nil {
+			panic(err)
+		}
+	}()
+
 	collection := client.Database(mongoDatabase).Collection(mongoCollection)
 
 	// Initialize metrics for all pets

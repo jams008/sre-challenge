@@ -1,100 +1,71 @@
-# SRE Challenge: Pixel Pet Virtual Pet Microservice
+# Virtual Pet Documentation
+## Project Architecture
+![Virtual Pet](./Img/virtual-pet-arch.png "Virtual Pet Application")
+<p align="justify">
+In this architectural design, I have tried to simplify it as much as possible while maintaining durability, scalability, and high availability.
 
-## Overview
+For durability, scalability, and high availability, I leverage the advantages of Kubernetes to address these challenges. One of the features I use is Horizontal Pod Autoscaler (HPA), along with node affinity and pod affinity, to ensure that pods are distributed across all nodes.
 
-Build a microservice that manages virtual pets with various stats (happiness, hunger, energy). While the core application can be built using AI tools, we're particularly interested in the human aspects of operating and maintaining the service - the critical thinking, decision-making, and communication skills that set great SREs apart.
+To maintain high availability, if a node fails, the service will remain available, ensuring no issues in handling incoming traffic. Additionally, the system can scale up or down the number of available pods based on traffic demand.
+</p>
 
-## What We're Looking For
+### Metric and Log
+<p align="justify">
+For application metrics and logs, I added metric data for happiness, hunger, and energy to be monitored, along with supporting data from the Golang code.
 
-### Design Thinking
-- How do you approach operational challenges?
-- What tradeoffs do you consider when making architectural decisions?
-- How do you balance reliability with complexity?
+For logging, I print every requested endpoint to the container's stdout.
+</p>
 
-### Operational Decision-Making
-- What metrics do you choose to monitor and why?
-- How do you determine alert thresholds?
-- What failure scenarios do you prepare for?
-- How do you prioritize reliability improvements?
+### Alert and Monitoring
+<p align="justify">
+For alerts, I added notifications for application metrics such as happiness, hunger, and energy. I believe this is important because it makes it easier to monitor the condition of the animals and quickly detect if any of them need care.
 
-### Communication & Documentation
-- Can you clearly explain your operational decisions?
-- How do you document system behavior and failure modes?
-- How do you structure runbooks and operational guides?
+I also added alerts for Kubernetes services, including Disk pressure, Memory pressure, Node not ready, High CPU usage, High memory usage, Job failed, PVC pending, and more. This helps to quickly identify issues with Kubernetes pods and nodes.
 
-## Technical Requirements
+For monitoring, I rely on Prometheus to scrape metrics and handle related tasks.
+</p>
 
-### 1. Core Service
-- Build a basic CRUD API for managing virtual pets
-- Use MongoDB for data storage
-- Use an LLM to assist with the application code
-- Focus on making thoughtful operational decisions
+### Failure scenario 
+For failure scenarios, I have implemented a few cases:
+- Panic scenario: I added a `/panic` endpoint to the API with automatic recovery in the code to prevent the application from stopping if a panic occurs.
+- Random pod deletion: This is used to demonstrate the application's high availability.
+- Random node deletion: Similarly, this is used to test the application's high availability.
 
-### 2. Operational Requirements
-- Containerize the application
-- Implement monitoring and logging
-  - Choose meaningful metrics
-  - Set appropriate log levels
-  - Consider what to alert on
-- Create runbooks for common scenarios
-- Document your decision-making process
+### Automation
+<p align="justify">
+For automation, I have only implemented CI with a trigger process. When a new release tag is created on GitHub, GitHub Actions will run to build the container image. Once the build is successful, the image will be pushed to the registry (Docker Hub).
 
-### 3. Automation
-- Set up CI/CD with GitHub Actions
-- Create operational tooling
-- Document automation decisions
-
-### 4. Local Development
-- Provide Docker-based environment
-- Include basic development tools
-- Clear setup instructions
+For now, due to my cloud provider limitations and time constraints, I develop and test everything on my local laptop.
+</p>
 
 ## Project Structure
-
-We've provided a basic structure to get you started:
 
 ```
 .
 ├── .github/
-│   └── workflows/        # GitHub Actions workflows
-├── src/
-│   ├── models/          # Data models
-│   ├── routes/          # API endpoints
-│   ├── utils/           # Utilities and helpers
-│   └── tests/           # Test suite
-├── docker-compose.yml   # Local development setup
-├── Dockerfile          # Application container
-└── README.md          # Documentation
+│   └── workflows/               # GitHub Actions workflows
+├── Img/                         # Images For Documentation
+├── Infra/
+│   ├── service-development/     # Local development setup 
+│   └── service-production/      # Production setup (K8s)
+├─── virtual-pet                 # Virtual pet code
+│    ├── models/                 # Data models
+│    ├── Dockerfile              # Application container
+│    ├── main.go                 # Application code
+│    └── postman_collection.json # Postman api collection virtual pet
+└── README.md                    # Documentation 
 ```
 
-Feel free to modify this structure based on your design decisions, but be sure to explain your choices.
+## Alert Test
+![Virtual Pet alert test 1](./Img/alert-test-1.png "Virtual Pet alert test 1")
+![Virtual Pet alert test 2](./Img/alert-test-2.png "Virtual Pet alert test 2")
 
-## Bonus Points
-- Infrastructure as Code
-- Advanced deployment strategies
-- Innovative monitoring solutions
-- Thoughtful scaling considerations
+## Project Runbook
+- [Development](Infra/service-development/README.md)
+- [Production](Infra/service-production/README.md)
 
-## Getting Started
-
-1. Fork this repository
-2. Use an LLM to help build the core application
-3. Focus on operational excellence
-4. Document your thought process
-
-## Submission
-
-Your submission should demonstrate:
-- Clear reasoning behind operational decisions
-- Thoughtful consideration of failure scenarios
-- Well-structured documentation
-- Effective communication of technical concepts
-
-Remember: While AI can help write code, we're interested in your:
-- Critical thinking
-- Problem-solving approach
-- System design decisions
-- Operational insights
-- Communication clarity
-
-Good luck! We're excited to see your unique approach to building and operating a reliable service.
+## improvements
+For improvements:
+- Implementing IaC to simplify the setup of the Kubernetes environment and its dependencies.
+- Adding a CD process to the automation pipeline for a more agile deployment process.
+- Enhancing or replacing monitoring and observability tools with solutions like Signoz, which offers more features such as APM, central logging, tracing, metrics scraping, alert management, and more.

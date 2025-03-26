@@ -1,0 +1,154 @@
+# Default values for virtual-pet.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: jamal008/virtual-pet
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "v0.0.7"
+
+imagePullSecrets: []
+nameOverride: "virtual-pet"
+fullnameOverride: "virtual-pet"
+
+strategy:
+  rollingUpdate:
+    maxSurge: 50%
+    maxUnavailable: 25%
+  type: RollingUpdate
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: false
+  # Automatically mount a ServiceAccount's API credentials?
+  automount: false
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+containerPort: 3000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    kubernetes.io/ingress.class: nginx
+  hosts:
+    - host: virtual-pet.k8s.orb.local
+      paths:
+        - path: /
+          pathType: Prefix
+
+resources:
+  limits:
+    cpu: 100m
+    memory: 128Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+livenessProbe:
+  httpGet:
+    path: /metrics
+    port: http
+    scheme: HTTP
+  initialDelaySeconds: 15
+  timeoutSeconds: 10
+  periodSeconds: 30
+  successThreshold: 1
+  failureThreshold: 5
+  terminationGracePeriodSeconds: 60
+readinessProbe:
+  httpGet:
+    path: /metrics
+    port: http
+    scheme: HTTP
+  initialDelaySeconds: 15
+  timeoutSeconds: 10
+  periodSeconds: 30
+  successThreshold: 1
+  failureThreshold: 5
+startupProbe:
+  httpGet:
+    path: /metrics
+    port: http
+    scheme: HTTP
+  initialDelaySeconds: 15
+  timeoutSeconds: 10
+  periodSeconds: 10
+  successThreshold: 1
+  failureThreshold: 5
+  terminationGracePeriodSeconds: 60
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+affinity: 
+  # nodeAffinity:
+  #   requiredDuringSchedulingIgnoredDuringExecution:
+  #     nodeSelectorTerms:
+  #       - matchExpressions:
+  #           - key: node-role.kubernetes.io/control-plane
+  #             operator: DoesNotExist
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 50
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - virtual-pet # name release
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - virtual-pet # name fullnameOverride or nameOverride
+          topologyKey: kubernetes.io/hostname
+
+# USE THE ORIGINAL VALUE, HELM WILL AUTOMATICALLY ENCODE THE VALUE FOR YOU.
+secrets:
+  enabled: true  # Change to true if you want to use secrets
+  values:
+    .env: config/.env
+
+  # Additional volumeMounts on the output Deployment definition.
+  volumeMounts: 
+    - name: app-config
+      mountPath: "/app/.env"
+      subPath: .env
+      readOnly: true
+  # Additional volumes on the output Deployment definition.
+  volumes: 
+    name: app-config
+
+nodeSelector: {}
+
+tolerations: []
